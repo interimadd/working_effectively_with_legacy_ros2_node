@@ -9,6 +9,10 @@
 
 Nodeの機能としては、ROS2の点群データ (`sensor_msgs/PointCloud2`) に対して、バウンディングボックス内の点群をフィルタリングする機能を提供しています。
 
+> [!NOTE]
+> レポジトリ名は[レガシーコード改善ガイド](https://www.shoeisha.co.jp/book/detail/9784798116839)の原題 "Working Effectively with Legacy Code" のもじりです。
+
+
 ## 動作確認方法
 
 ### ビルド
