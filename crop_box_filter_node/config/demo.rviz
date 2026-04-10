@@ -1,0 +1,49 @@
+Panels:
+  - Class: rviz_common/Displays
+    Name: Displays
+Visualization Manager:
+  Class: ""
+  Displays:
+    - Class: rviz_default_plugins/PointCloud2
+      Name: Input PointCloud
+      Enabled: true
+      Topic:
+        Value: /input/pointcloud
+        Depth: 5
+        Reliability Policy: Best Effort
+      Size (Pixels): 2
+      Color Transformer: AxisColor
+      Axis: Z
+      Style: Points
+      Alpha: 0.5
+    - Class: rviz_default_plugins/PointCloud2
+      Name: Output PointCloud (Filtered)
+      Enabled: true
+      Topic:
+        Value: /output/pointcloud
+        Depth: 5
+        Reliability Policy: Best Effort
+      Size (Pixels): 3
+      Color Transformer: FlatColor
+      Color: 0; 255; 0
+      Style: Points
+      Alpha: 1.0
+    - Class: rviz_default_plugins/Polygon
+      Name: Crop Box
+      Enabled: true
+      Topic:
+        Value: /pointcloud_crop_filter/crop_box_polygon
+        Depth: 10
+      Color: 255; 0; 0
+  Global Options:
+    Fixed Frame: d435_depth_optical_frame
+    Frame Rate: 30
+  Value: true
+  Views:
+    Current:
+      Class: rviz_default_plugins/Orbit
+      Distance: 3
+      Focal Point:
+        X: 0
+        Y: 0
+        Z: 0.5
