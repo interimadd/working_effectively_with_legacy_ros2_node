@@ -1,6 +1,6 @@
 # Working effectively with legacy ROS2 Node
 
-このパッケージは **レガシーコードのリファクタリング用サンプル** として作成されたROS2 Nodeのパッケージです。リファクタリングの練習のために、このノードは意図的に以下の問題を含んでいます。
+このパッケージは **レガシーコードのリファクタリング用サンプル** として作成されたROS2 Nodeのパッケージです。Nodeは、[crop_box_filter_node/src/pointcloud_crop_filter_node.cpp](crop_box_filter_node/src/pointcloud_crop_filter_node.cpp)に実装されており、リファクタリングの練習のために意図的に以下の問題を含んだ実装になっています。
 
 - **Node とフィルタロジックの密結合**: フィルタ処理が `pointcloud_callback()` に直接記述されており、ノードを起動せずに単体テストできない
 - **単体テストや結合テストがない**: 自動テストができず、rviz2で表示することでしか動作確認ができない
