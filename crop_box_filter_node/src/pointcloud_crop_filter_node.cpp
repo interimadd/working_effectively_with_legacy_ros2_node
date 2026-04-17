@@ -1,6 +1,7 @@
 #include "pointcloud_crop_filter/pointcloud_crop_filter_node.hpp"
 
 #include <pcl_conversions/pcl_conversions.h>
+#include <rclcpp_components/register_node_macro.hpp>
 #include <tf2_eigen/tf2_eigen.hpp>
 
 #include <cstring>
@@ -207,10 +208,4 @@ void PointCloudCropFilterNode::publish_crop_box_polygon()
 
 }  // namespace pointcloud_crop_filter
 
-int main(int argc, char ** argv)
-{
-  rclcpp::init(argc, argv);
-  rclcpp::spin(std::make_shared<pointcloud_crop_filter::PointCloudCropFilterNode>(rclcpp::NodeOptions()));
-  rclcpp::shutdown();
-  return 0;
-}
+RCLCPP_COMPONENTS_REGISTER_NODE(pointcloud_crop_filter::PointCloudCropFilterNode)
