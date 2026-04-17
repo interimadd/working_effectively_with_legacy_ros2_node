@@ -18,6 +18,7 @@ ros2 run pointcloud_crop_filter pointcloud_crop_filter_node --ros-args \
   -p crop_box_frame:=d435_depth_optical_frame \
   -p min_x:=-0.3 -p min_y:=-0.3 -p min_z:=0.0 \
   -p max_x:=0.3 -p max_y:=0.3 -p max_z:=1.5 \
+  -p keep_outside:=false \
   --remap input:=/input/pointcloud \
   --remap output:=/output/pointcloud &
 NODE_PID=$!
