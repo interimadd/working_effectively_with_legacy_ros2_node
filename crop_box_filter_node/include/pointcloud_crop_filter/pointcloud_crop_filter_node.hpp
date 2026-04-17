@@ -47,16 +47,13 @@ private:
     Eigen::Matrix4f & transform);
 
   // Crop box parameters
-  struct CropBoxParam
-  {
-    float min_x;
-    float max_x;
-    float min_y;
-    float max_y;
-    float min_z;
-    float max_z;
-    bool keep_outside{false};
-  } param_;
+  float min_x_;
+  float max_x_;
+  float min_y_;
+  float max_y_;
+  float min_z_;
+  float max_z_;
+  bool keep_outside_{false};
 
   // Pub / Sub
   rclcpp::Subscription<PointCloud2>::SharedPtr sub_input_;

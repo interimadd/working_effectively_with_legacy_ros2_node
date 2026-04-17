@@ -40,23 +40,20 @@ PointCloudCropFilterNode::PointCloudCropFilterNode(const rclcpp::NodeOptions & o
   }
 
   // Crop box parameters
-  {
-    auto & p = param_;
-    p.min_x = static_cast<float>(declare_parameter<double>("min_x"));
-    p.min_y = static_cast<float>(declare_parameter<double>("min_y"));
-    p.min_z = static_cast<float>(declare_parameter<double>("min_z"));
-    p.max_x = static_cast<float>(declare_parameter<double>("max_x"));
-    p.max_y = static_cast<float>(declare_parameter<double>("max_y"));
-    p.max_z = static_cast<float>(declare_parameter<double>("max_z"));
-    p.keep_outside = declare_parameter<bool>("keep_outside");
-  }
+  min_x_ = static_cast<float>(declare_parameter<double>("min_x"));
+  min_y_ = static_cast<float>(declare_parameter<double>("min_y"));
+  min_z_ = static_cast<float>(declare_parameter<double>("min_z"));
+  max_x_ = static_cast<float>(declare_parameter<double>("max_x"));
+  max_y_ = static_cast<float>(declare_parameter<double>("max_y"));
+  max_z_ = static_cast<float>(declare_parameter<double>("max_z"));
+  keep_outside_ = declare_parameter<bool>("keep_outside");
 
   RCLCPP_INFO(
     get_logger(),
     "CropBox min=(%.1f, %.1f, %.1f) max=(%.1f, %.1f, %.1f) keep_outside=%s",
-    param_.min_x, param_.min_y, param_.min_z,
-    param_.max_x, param_.max_y, param_.max_z,
-    param_.keep_outside ? "true" : "false");
+    min_x_, min_y_, min_z_,
+    max_x_, max_y_, max_z_,
+    keep_outside_ ? "true" : "false");
 
   // Output publisher
   {
@@ -132,11 +129,11 @@ void PointCloudCropFilterNode::pointcloud_callback(const PointCloud2ConstPtr msg
     }
 
     bool point_is_inside =
-      point_preprocessed[2] > param_.min_z && point_preprocessed[2] < param_.max_z &&
-      point_preprocessed[1] > param_.min_y && point_preprocessed[1] < param_.max_y &&
-      point_preprocessed[0] > param_.min_x && point_preprocessed[0] < param_.max_x;
+      point_preprocessed[2] > min_z_ && point_preprocessed[2] < max_z_ &&
+      point_preprocessed[1] > min_y_ && point_preprocessed[1] < max_y_ &&
+      point_preprocessed[0] > min_x_ && point_preprocessed[0] < max_x_;
 
-    if ((!param_.keep_outside && point_is_inside) || (param_.keep_outside && !point_is_inside)) {
+    if ((!keep_outside_ && point_is_inside) || (keep_outside_ && !point_is_inside)) {
       std::memcpy(&output.data[output_size], &msg->data[global_offset], msg->point_step);
       output_size += msg->point_step;
     }
@@ -167,18 +164,18 @@ void PointCloudCropFilterNode::publish_crop_box_polygon()
     return point;
   };
 
-  const double x1 = param_.max_x;
-  const double x2 = param_.min_x;
-  const double x3 = param_.min_x;
-  const double x4 = param_.max_x;
+  const double x1 = max_x_;
+  const double x2 = min_x_;
+  const double x3 = min_x_;
+  const double x4 = max_x_;
 
-  const double y1 = param_.max_y;
-  const double y2 = param_.max_y;
-  const double y3 = param_.min_y;
-  const double y4 = param_.min_y;
+  const double y1 = max_y_;
+  const double y2 = max_y_;
+  const double y3 = min_y_;
+  const double y4 = min_y_;
 
-  const double z1 = param_.min_z;
-  const double z2 = param_.max_z;
+  const double z1 = min_z_;
+  const double z2 = max_z_;
 
   geometry_msgs::msg::PolygonStamped polygon_msg;
   polygon_msg.header.frame_id = crop_box_frame_;
