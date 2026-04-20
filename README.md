@@ -53,6 +53,19 @@ rviz2 上には以下が表示されます:
 ![rviz2 visualization result](rosbag/rviz2-visualization-result.gif)
 
 
+## テストの実行
+
+[crop_box_filter_node/test/test_pointcloud_crop_filter_node.cpp](crop_box_filter_node/test/test_pointcloud_crop_filter_node.cpp) のテストは `colcon test` で実行できます。
+
+```bash
+source /opt/ros/humble/setup.bash
+cd ~/practice/working_effectively_with_legacy_ros2_node
+colcon build --packages-select pointcloud_crop_filter
+colcon test --packages-select pointcloud_crop_filter --event-handlers console_direct+
+colcon test-result --verbose
+```
+
+
 ## Nodeの詳細
 
 | 項目 | 値 |
