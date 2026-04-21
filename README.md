@@ -19,20 +19,13 @@ Nodeの機能としては、ROS2の点群データ (`sensor_msgs/PointCloud2`) �
 ### ビルド
 
 ```bash
-source /opt/ros/humble/setup.bash
-cd ~/practice/working_effectively_with_legacy_ros2_node
-colcon build --packages-select pointcloud_crop_filter
+./script/build.sh
 ```
 
 ### 起動
 
 ```bash
-source install/setup.bash
-ros2 run pointcloud_crop_filter pointcloud_crop_filter_node --ros-args \
-  -p input_pointcloud_frame:=base_link \
-  -p crop_box_frame:=base_link \
-  --remap input:=/your/pointcloud \
-  --remap output:=/filtered/pointcloud
+./script/run.sh
 ```
 
 ### rviz2 での表示
@@ -41,7 +34,7 @@ ros2 run pointcloud_crop_filter pointcloud_crop_filter_node --ros-args \
 
 ```bash
 # ビルド後に実行
-./debug_with_rviz2.sh
+./script/debug_with_rviz2.sh
 ```
 
 rviz2 上には以下が表示されます:
@@ -58,11 +51,7 @@ rviz2 上には以下が表示されます:
 [crop_box_filter_node/test/test_pointcloud_crop_filter_node.cpp](crop_box_filter_node/test/test_pointcloud_crop_filter_node.cpp) のテストは `colcon test` で実行できます。
 
 ```bash
-source /opt/ros/humble/setup.bash
-cd ~/practice/working_effectively_with_legacy_ros2_node
-colcon build --packages-select pointcloud_crop_filter
-colcon test --packages-select pointcloud_crop_filter --event-handlers console_direct+
-colcon test-result --verbose
+./script/test.sh
 ```
 
 
@@ -76,44 +65,19 @@ sudo apt install lcov
 
 ### 計測手順
 
-1. カバレッジ計測用のフラグを付けてビルド
+以下のスクリプトを実行すると、カバレッジ計測用のビルド・テスト・`lcov` での集計・サマリー表示・HTMLレポート生成までを一括で実行できます。
 
-    ```bash
-    source /opt/ros/humble/setup.bash
-    cd ~/practice/working_effectively_with_legacy_ros2_node
-    colcon build --symlink-install \
-      --cmake-args -DBUILD_TESTING=ON \
-        -DCMAKE_CXX_FLAGS='-fprofile-arcs -ftest-coverage -O0 -g' \
-        -DCMAKE_C_FLAGS='-fprofile-arcs -ftest-coverage -O0 -g' \
-      --packages-select pointcloud_crop_filter
-    ```
+```bash
+./script/measure_coverage.sh
+```
 
-2. テストを実行してカバレッジデータ (`.gcda`) を生成
+スクリプトの内部では以下のステップを順に実行しています。
 
-    ```bash
-    colcon test --packages-select pointcloud_crop_filter --event-handlers console_direct+
-    ```
-
+1. カバレッジ計測用のフラグ (`-fprofile-arcs -ftest-coverage -O0 -g`) を付けて `colcon build`
+2. `colcon test` でカバレッジデータ (`.gcda`) を生成
 3. `lcov` でカバレッジ情報を収集し、パッケージのソースのみを抽出 (テストコード自体は除外)
-
-    ```bash
-    lcov --capture --directory build/pointcloud_crop_filter --output-file coverage.info
-    lcov --extract coverage.info "*/crop_box_filter_node/*" --output-file coverage.info
-    lcov --remove  coverage.info "*/test/*"                 --output-file coverage.info
-    ```
-
-4. サマリーを表示
-
-    ```bash
-    lcov --summary coverage.info
-    ```
-
-5. HTMLレポートを生成してブラウザで確認
-
-    ```bash
-    genhtml coverage.info --output-directory coverage_html
-    xdg-open coverage_html/index.html
-    ```
+4. `lcov --summary` でサマリーを表示
+5. `genhtml` でHTMLレポートを生成し `xdg-open` でブラウザ表示
 
 > [!TIP]
 > カバレッジフラグなしでビルドし直したい場合は `rm -rf build/ install/ log/` でクリーンビルドしてください。同じビルドディレクトリに `.gcno` / `.gcda` が残っていると計測結果がずれます。
