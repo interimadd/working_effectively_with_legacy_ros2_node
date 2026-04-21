@@ -66,6 +66,59 @@ colcon test-result --verbose
 ```
 
 
+## テストカバレッジの計測
+
+[lcov](https://github.com/linux-test-project/lcov) を用いて、テストのラインカバレッジを計測できます。事前に `lcov` をインストールしてください。
+
+```bash
+sudo apt install lcov
+```
+
+### 計測手順
+
+1. カバレッジ計測用のフラグを付けてビルド
+
+    ```bash
+    source /opt/ros/humble/setup.bash
+    cd ~/practice/working_effectively_with_legacy_ros2_node
+    colcon build --symlink-install \
+      --cmake-args -DBUILD_TESTING=ON \
+        -DCMAKE_CXX_FLAGS='-fprofile-arcs -ftest-coverage -O0 -g' \
+        -DCMAKE_C_FLAGS='-fprofile-arcs -ftest-coverage -O0 -g' \
+      --packages-select pointcloud_crop_filter
+    ```
+
+2. テストを実行してカバレッジデータ (`.gcda`) を生成
+
+    ```bash
+    colcon test --packages-select pointcloud_crop_filter --event-handlers console_direct+
+    ```
+
+3. `lcov` でカバレッジ情報を収集し、パッケージのソースのみを抽出 (テストコード自体は除外)
+
+    ```bash
+    lcov --capture --directory build/pointcloud_crop_filter --output-file coverage.info
+    lcov --extract coverage.info "*/crop_box_filter_node/*" --output-file coverage.info
+    lcov --remove  coverage.info "*/test/*"                 --output-file coverage.info
+    ```
+
+4. サマリーを表示
+
+    ```bash
+    lcov --summary coverage.info
+    ```
+
+5. HTMLレポートを生成してブラウザで確認
+
+    ```bash
+    genhtml coverage.info --output-directory coverage_html
+    xdg-open coverage_html/index.html
+    ```
+
+> [!TIP]
+> カバレッジフラグなしでビルドし直したい場合は `rm -rf build/ install/ log/` でクリーンビルドしてください。同じビルドディレクトリに `.gcno` / `.gcda` が残っていると計測結果がずれます。
+
+
 ## Nodeの詳細
 
 | 項目 | 値 |

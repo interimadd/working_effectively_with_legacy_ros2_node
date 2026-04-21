@@ -1,3 +1,5 @@
 build/
 install/
 log/
+coverage_html/
+coverage.info
