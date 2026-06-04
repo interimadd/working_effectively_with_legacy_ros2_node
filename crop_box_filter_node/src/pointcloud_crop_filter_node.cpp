@@ -109,6 +109,7 @@ void PointCloudCropFilterNode::pointcloud_callback(const PointCloud2ConstPtr msg
 
   output.data.resize(msg->data.size());
   size_t output_size = 0;
+  size_t non_finite_count = 0;
 
   for (size_t global_offset = 0; global_offset + msg->point_step <= msg->data.size();
        global_offset += msg->point_step) {
@@ -120,6 +121,7 @@ void PointCloudCropFilterNode::pointcloud_callback(const PointCloud2ConstPtr msg
     point[3] = 1;
 
     if (!std::isfinite(point[0]) || !std::isfinite(point[1]) || !std::isfinite(point[2])) {
+      ++non_finite_count;
       continue;
     }
 
@@ -138,6 +140,12 @@ void PointCloudCropFilterNode::pointcloud_callback(const PointCloud2ConstPtr msg
       std::memcpy(&output.data[output_size], &msg->data[global_offset], msg->point_step);
       output_size += msg->point_step;
     }
+  }
+
+  if (non_finite_count > 0) {
+    RCLCPP_WARN(
+      this->get_logger(), "Skipped %zu non-finite points in the input pointcloud.",
+      non_finite_count);
   }
 
   output.data.resize(output_size);
