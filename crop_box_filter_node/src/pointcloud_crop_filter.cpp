@@ -1,6 +1,6 @@
 #include "pointcloud_crop_filter/pointcloud_crop_filter.hpp"
 
-#include <pcl_conversions/pcl_conversions.h>
+#include <sensor_msgs/point_cloud2_iterator.hpp>
 #include <tf2_eigen/tf2_eigen.hpp>
 
 #include <cmath>
@@ -22,29 +22,23 @@ PointCloudCropFilterResult PointCloudCropFilter::filter(const PointCloud2 & msg)
 {
   auto output = PointCloud2();
 
-  // Filter pointcloud using index-based memcpy access
-  int x_offset = msg.fields[pcl::getFieldIndex(msg, "x")].offset;
-  int y_offset = msg.fields[pcl::getFieldIndex(msg, "y")].offset;
-  int z_offset = msg.fields[pcl::getFieldIndex(msg, "z")].offset;
+  // Read x/y/z by field name; copy whole points (all fields) on a match.
+  sensor_msgs::PointCloud2ConstIterator<float> iter_x(msg, "x");
+  sensor_msgs::PointCloud2ConstIterator<float> iter_y(msg, "y");
+  sensor_msgs::PointCloud2ConstIterator<float> iter_z(msg, "z");
 
   output.data.resize(msg.data.size());
   size_t output_size = 0;
   size_t non_finite_count = 0;
 
-  for (size_t global_offset = 0; global_offset + msg.point_step <= msg.data.size();
-       global_offset += msg.point_step) {
-    Eigen::Vector4f point;
-
-    std::memcpy(&point[0], &msg.data[global_offset + x_offset], sizeof(float));
-    std::memcpy(&point[1], &msg.data[global_offset + y_offset], sizeof(float));
-    std::memcpy(&point[2], &msg.data[global_offset + z_offset], sizeof(float));
-    point[3] = 1;
-
-    if (!std::isfinite(point[0]) || !std::isfinite(point[1]) || !std::isfinite(point[2])) {
+  for (size_t global_offset = 0; iter_x != iter_x.end();
+       ++iter_x, ++iter_y, ++iter_z, global_offset += msg.point_step) {
+    if (!std::isfinite(*iter_x) || !std::isfinite(*iter_y) || !std::isfinite(*iter_z)) {
       ++non_finite_count;
       continue;
     }
 
+    const Eigen::Vector4f point(*iter_x, *iter_y, *iter_z, 1.0f);
     const Eigen::Vector4f point_preprocessed = transform_input_to_crop_box_ * point;
 
     bool point_is_inside =

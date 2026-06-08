@@ -6,12 +6,9 @@ find_package(rclcpp REQUIRED)
 find_package(rclcpp_components REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(geometry_msgs REQUIRED)
-find_package(pcl_conversions REQUIRED)
-find_package(pcl_ros REQUIRED)
 find_package(tf2 REQUIRED)
 find_package(tf2_ros REQUIRED)
 find_package(tf2_eigen REQUIRED)
-find_package(PCL REQUIRED COMPONENTS common)
 
 add_library(${PROJECT_NAME}_component SHARED
   src/pointcloud_crop_filter.cpp
@@ -20,18 +17,12 @@ add_library(${PROJECT_NAME}_component SHARED
 target_include_directories(${PROJECT_NAME}_component PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   $<INSTALL_INTERFACE:include>
-  ${PCL_INCLUDE_DIRS}
-)
-target_link_libraries(${PROJECT_NAME}_component
-  ${PCL_LIBRARIES}
 )
 ament_target_dependencies(${PROJECT_NAME}_component
   rclcpp
   rclcpp_components
   sensor_msgs
   geometry_msgs
-  pcl_conversions
-  pcl_ros
   tf2
   tf2_ros
   tf2_eigen
@@ -65,8 +56,6 @@ ament_export_dependencies(
   rclcpp_components
   sensor_msgs
   geometry_msgs
-  pcl_conversions
-  pcl_ros
   tf2
   tf2_ros
   tf2_eigen
