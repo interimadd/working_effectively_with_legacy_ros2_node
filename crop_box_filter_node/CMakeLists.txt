@@ -14,6 +14,7 @@ find_package(tf2_eigen REQUIRED)
 find_package(PCL REQUIRED COMPONENTS common)
 
 add_library(${PROJECT_NAME}_component SHARED
+  src/pointcloud_crop_filter.cpp
   src/pointcloud_crop_filter_node.cpp
 )
 target_include_directories(${PROJECT_NAME}_component PUBLIC
