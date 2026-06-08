@@ -83,6 +83,13 @@ if(BUILD_TESTING)
   target_link_libraries(test_${PROJECT_NAME}_node
     ${PROJECT_NAME}_component
   )
+
+  ament_add_gtest(test_${PROJECT_NAME}
+    test/test_pointcloud_crop_filter.cpp
+  )
+  target_link_libraries(test_${PROJECT_NAME}
+    ${PROJECT_NAME}_component
+  )
 endif()
 
 ament_package()
