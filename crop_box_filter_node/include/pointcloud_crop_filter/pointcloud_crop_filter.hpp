@@ -4,11 +4,11 @@
 #include <rclcpp/time.hpp>
 #include <sensor_msgs/msg/point_cloud2.hpp>
 #include <geometry_msgs/msg/polygon_stamped.hpp>
+#include <geometry_msgs/msg/transform_stamped.hpp>
 
 #include <Eigen/Core>
 
 #include <cstddef>
-#include <string>
 
 namespace pointcloud_crop_filter
 {
@@ -24,13 +24,7 @@ struct PointCloudCropFilterConfig
   float min_z;
   float max_z;
   bool keep_outside;
-  // Frame the filtered output is published in (the input pointcloud's original frame).
-  std::string input_frame;
-  // Frame the crop box polygon is published in.
-  std::string crop_box_frame;
-  // Whether to apply the preprocess transform (input_orig_frame -> crop_box_frame).
-  bool need_preprocess_transform;
-  Eigen::Matrix4f eigen_transform_preprocess;
+  geometry_msgs::msg::TransformStamped transform_input_to_crop_box;
 };
 
 struct PointCloudCropFilterResult
@@ -50,6 +44,7 @@ public:
 
 private:
   PointCloudCropFilterConfig config_{};
+  Eigen::Matrix4f transform_input_to_crop_box_{Eigen::Matrix4f::Identity()};
 };
 
 }  // namespace pointcloud_crop_filter

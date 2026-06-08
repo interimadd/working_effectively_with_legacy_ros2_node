@@ -1,7 +1,6 @@
 #include "pointcloud_crop_filter/pointcloud_crop_filter_node.hpp"
 
 #include <rclcpp_components/register_node_macro.hpp>
-#include <tf2_eigen/tf2_eigen.hpp>
 
 #include <memory>
 #include <string>
@@ -24,16 +23,14 @@ PointCloudCropFilterNode::PointCloudCropFilterNode(const rclcpp::NodeOptions & o
     static_cast<std::string>(declare_parameter("crop_box_frame", "base_link"));
   max_queue_size_ = static_cast<size_t>(declare_parameter("max_queue_size", 5));
 
-  // Preprocess transform: input_orig_frame -> crop_box_frame
-  bool need_preprocess_transform = false;
-  Eigen::Matrix4f eigen_transform_preprocess = Eigen::Matrix4f::Identity();
-  if (tf_input_orig_frame == crop_box_frame) {
-    need_preprocess_transform = false;
-    eigen_transform_preprocess = Eigen::Matrix4f::Identity();
-  } else {
-    need_preprocess_transform =
-      lookup_transform(crop_box_frame, tf_input_orig_frame, eigen_transform_preprocess);
-    if (!need_preprocess_transform) {
+  // Transform from the input pointcloud frame to the crop box frame.
+  // Default to identity; when the frames differ, look the transform up from TF.
+  geometry_msgs::msg::TransformStamped transform_input_to_crop_box;
+  transform_input_to_crop_box.header.frame_id = crop_box_frame;
+  transform_input_to_crop_box.child_frame_id = tf_input_orig_frame;
+  transform_input_to_crop_box.transform.rotation.w = 1.0;  // identity rotation
+  if (tf_input_orig_frame != crop_box_frame) {
+    if (!lookup_transform(crop_box_frame, tf_input_orig_frame, transform_input_to_crop_box)) {
       RCLCPP_ERROR(
         this->get_logger(), "Cannot get transform from %s to %s. Please check your TF tree.",
         tf_input_orig_frame.c_str(), crop_box_frame.c_str());
@@ -49,10 +46,7 @@ PointCloudCropFilterNode::PointCloudCropFilterNode(const rclcpp::NodeOptions & o
   config.max_y = static_cast<float>(declare_parameter<double>("max_y"));
   config.max_z = static_cast<float>(declare_parameter<double>("max_z"));
   config.keep_outside = declare_parameter<bool>("keep_outside");
-  config.input_frame = tf_input_orig_frame;
-  config.crop_box_frame = crop_box_frame;
-  config.need_preprocess_transform = need_preprocess_transform;
-  config.eigen_transform_preprocess = eigen_transform_preprocess;
+  config.transform_input_to_crop_box = transform_input_to_crop_box;
 
   filter_ = PointCloudCropFilter(config);
 
@@ -91,13 +85,11 @@ PointCloudCropFilterNode::PointCloudCropFilterNode(const rclcpp::NodeOptions & o
 
 bool PointCloudCropFilterNode::lookup_transform(
   const std::string & target_frame, const std::string & source_frame,
-  Eigen::Matrix4f & transform)
+  geometry_msgs::msg::TransformStamped & transform)
 {
   try {
-    auto tf_stamped = tf_buffer_->lookupTransform(
+    transform = tf_buffer_->lookupTransform(
       target_frame, source_frame, tf2::TimePointZero, tf2::durationFromSec(1.0));
-    Eigen::Isometry3d eigen_tf = tf2::transformToEigen(tf_stamped);
-    transform = eigen_tf.matrix().cast<float>();
     return true;
   } catch (const tf2::TransformException & ex) {
     RCLCPP_WARN(this->get_logger(), "TF lookup failed: %s", ex.what());

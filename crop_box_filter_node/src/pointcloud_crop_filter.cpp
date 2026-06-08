@@ -1,6 +1,7 @@
 #include "pointcloud_crop_filter/pointcloud_crop_filter.hpp"
 
 #include <pcl_conversions/pcl_conversions.h>
+#include <tf2_eigen/tf2_eigen.hpp>
 
 #include <cmath>
 #include <cstdint>
@@ -11,7 +12,9 @@ namespace pointcloud_crop_filter
 {
 
 PointCloudCropFilter::PointCloudCropFilter(const PointCloudCropFilterConfig & config)
-: config_(config)
+: config_(config),
+  transform_input_to_crop_box_(
+    tf2::transformToEigen(config.transform_input_to_crop_box).matrix().cast<float>())
 {
 }
 
@@ -42,11 +45,7 @@ PointCloudCropFilterResult PointCloudCropFilter::filter(const PointCloud2 & msg)
       continue;
     }
 
-    Eigen::Vector4f point_preprocessed = point;
-
-    if (config_.need_preprocess_transform) {
-      point_preprocessed = config_.eigen_transform_preprocess * point;
-    }
+    const Eigen::Vector4f point_preprocessed = transform_input_to_crop_box_ * point;
 
     bool point_is_inside =
       point_preprocessed[2] > config_.min_z && point_preprocessed[2] < config_.max_z &&
@@ -60,7 +59,7 @@ PointCloudCropFilterResult PointCloudCropFilter::filter(const PointCloud2 & msg)
   }
 
   output.data.resize(output_size);
-  output.header.frame_id = config_.input_frame;
+  output.header.frame_id = config_.transform_input_to_crop_box.child_frame_id;
   output.header.stamp = msg.header.stamp;
   output.height = 1;
   output.fields = msg.fields;
@@ -101,7 +100,7 @@ geometry_msgs::msg::PolygonStamped PointCloudCropFilter::create_crop_box_polygon
   const double z2 = config_.max_z;
 
   geometry_msgs::msg::PolygonStamped polygon_msg;
-  polygon_msg.header.frame_id = config_.crop_box_frame;
+  polygon_msg.header.frame_id = config_.transform_input_to_crop_box.header.frame_id;
   polygon_msg.header.stamp = stamp;
   polygon_msg.polygon.points.push_back(generatePoint(x1, y1, z1));
   polygon_msg.polygon.points.push_back(generatePoint(x2, y2, z1));

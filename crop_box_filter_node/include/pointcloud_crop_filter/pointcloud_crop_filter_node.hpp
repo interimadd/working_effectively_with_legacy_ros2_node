@@ -6,10 +6,9 @@
 #include <rclcpp/rclcpp.hpp>
 #include <sensor_msgs/msg/point_cloud2.hpp>
 #include <geometry_msgs/msg/polygon_stamped.hpp>
+#include <geometry_msgs/msg/transform_stamped.hpp>
 #include <tf2_ros/buffer.h>
 #include <tf2_ros/transform_listener.h>
-
-#include <Eigen/Core>
 
 #include <memory>
 #include <string>
@@ -33,7 +32,7 @@ private:
 
   bool lookup_transform(
     const std::string & target_frame, const std::string & source_frame,
-    Eigen::Matrix4f & transform);
+    geometry_msgs::msg::TransformStamped & transform);
 
   // Core logic
   PointCloudCropFilter filter_;
